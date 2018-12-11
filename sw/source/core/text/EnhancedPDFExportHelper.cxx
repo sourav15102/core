@@ -1734,6 +1734,7 @@ void SwEnhancedPDFExportHelper::EnhancedPDFExport()
             SwFrameFormat* pFrameFormat = (*pTable)[n];
             const SfxPoolItem* pItem;
             if ( RES_DRAWFRMFMT != pFrameFormat->Which() &&
+                GetFrameOfModify(mrSh.GetLayout(), *pFrameFormat, SwFrameType::Fly) &&
                  SfxItemState::SET == pFrameFormat->GetAttrSet().GetItemState( RES_URL, true, &pItem ) )
             {
                 const SwPageFrame* pCurrPage =
@@ -1947,8 +1948,12 @@ void SwEnhancedPDFExportHelper::EnhancedPDFExport()
 
             // 1. Check if the whole paragraph is hidden
             // 2. Check for hidden text attribute
-            if ( rTNd.GetTextNode()->IsHidden() || mrSh.SelectHiddenRange() )
+            if (rTNd.GetTextNode()->IsHidden() || mrSh.SelectHiddenRange()
+                || (mrSh.GetLayout()->IsHideRedlines()
+                    && sw::IsFootnoteDeleted(pDoc->getIDocumentRedlineAccess(), *pTextFootnote)))
+            {
                 continue;
+            }
 
             SwCursorSaveState aSaveState( *mrSh.GetCursor_() );
 
